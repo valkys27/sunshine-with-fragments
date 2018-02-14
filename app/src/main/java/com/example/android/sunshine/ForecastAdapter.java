@@ -16,7 +16,9 @@
 package com.example.android.sunshine;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -64,6 +66,8 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
     private boolean mUseTodayLayout;
 
     private Cursor mCursor;
+
+    private int mSelectedPosition = 0;
 
     /**
      * Creates a ForecastAdapter.
@@ -213,6 +217,12 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
          /* Set the text and content description (for accessibility purposes) */
         forecastAdapterViewHolder.lowTempView.setText(lowString);
         forecastAdapterViewHolder.lowTempView.setContentDescription(lowA11y);
+
+        if (mContext.getResources().getConfiguration().smallestScreenWidthDp >= 600 &&
+                mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            forecastAdapterViewHolder.itemView.setBackgroundColor((mSelectedPosition == position) ?
+                            mContext.getResources().getColor(R.color.activated) : Color.TRANSPARENT);
+        }
     }
 
     /**
@@ -272,16 +282,16 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
         final TextView highTempView;
         final TextView lowTempView;
 
-        ForecastAdapterViewHolder(View view) {
-            super(view);
+        ForecastAdapterViewHolder(View itemView) {
+            super(itemView);
 
-            iconView = (ImageView) view.findViewById(R.id.weather_icon);
-            dateView = (TextView) view.findViewById(R.id.date);
-            descriptionView = (TextView) view.findViewById(R.id.weather_description);
-            highTempView = (TextView) view.findViewById(R.id.high_temperature);
-            lowTempView = (TextView) view.findViewById(R.id.low_temperature);
+            iconView = (ImageView) itemView.findViewById(R.id.weather_icon);
+            dateView = (TextView) itemView.findViewById(R.id.date);
+            descriptionView = (TextView) itemView.findViewById(R.id.weather_description);
+            highTempView = (TextView) itemView.findViewById(R.id.high_temperature);
+            lowTempView = (TextView) itemView.findViewById(R.id.low_temperature);
 
-            view.setOnClickListener(this);
+            itemView.setOnClickListener(this);
         }
 
         /**
@@ -297,6 +307,13 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
             mCursor.moveToPosition(adapterPosition);
             long dateInMillis = mCursor.getLong(ListFragment.INDEX_WEATHER_DATE);
             mClickHandler.onClick(dateInMillis);
+
+            if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
+
+            // Updating old as well as new positions
+            notifyItemChanged(mSelectedPosition);
+            mSelectedPosition = adapterPosition;
+            notifyItemChanged(mSelectedPosition);
         }
     }
 }

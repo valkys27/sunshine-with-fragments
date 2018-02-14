@@ -26,6 +26,10 @@ import android.view.*;
 import android.widget.FrameLayout;
 
 import com.example.android.sunshine.data.SunshinePreferences;
+import com.example.android.sunshine.data.WeatherContract;
+import com.example.android.sunshine.utilities.SunshineDateUtils;
+
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements
         ListFragment.OnItemChangeListener {
@@ -36,14 +40,12 @@ public class MainActivity extends AppCompatActivity implements
     private final String TAG = MainActivity.class.getSimpleName();
 
     private int screensInTheStack;
-    private FrameLayout detailContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
         getSupportActionBar().setElevation(0f);
-        detailContainer = (FrameLayout) findViewById(R.id.detail_fragment);
         screensInTheStack = (savedInstanceState == null) ?
                 0 : savedInstanceState.getInt(SCREENS_IN_THE_STAG_TAG, 0);
         Uri uri = getIntent().getData();
@@ -73,13 +75,20 @@ public class MainActivity extends AppCompatActivity implements
         DetailFragment oldDetailFragment = (DetailFragment) fm.findFragmentByTag(DetailFragment.TAG);
         FragmentTransaction transaction = fm.beginTransaction();
         if (fragment instanceof ListFragment) {
+            if (smallestScreenWidthDp >= 600 && orientation == Configuration.ORIENTATION_LANDSCAPE
+                    && oldDetailFragment == null) {
+                long date = SunshineDateUtils.normalizeDate(System.currentTimeMillis());
+                DetailFragment detailFragment = DetailFragment
+                        .newInstance(WeatherContract.WeatherEntry.buildWeatherUriWithDate(date));
+                transaction.replace(R.id.detail_fragment, detailFragment, DetailFragment.TAG);
+                getIntent().setData(detailFragment.getUri());
+            }
             if (screensInTheStack > 0) {
                 screensInTheStack--;
                 fm.popBackStack(BACK_STACK_ROOT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
             else {
-                transaction
-                        .replace(R.id.main_fragment, fragment, ListFragment.TAG);
+                transaction.replace(R.id.main_fragment, fragment, ListFragment.TAG);
                 if (oldDetailFragment != null || fm.findFragmentByTag(ListFragment.TAG) == null)
                     transaction.addToBackStack(BACK_STACK_ROOT_TAG);
             }
@@ -90,9 +99,7 @@ public class MainActivity extends AppCompatActivity implements
                 transaction.addToBackStack(null);
             }
         } else  {
-            transaction
-                    .replace(R.id.detail_fragment, fragment, DetailFragment.TAG)
-                    .replace(R.id.main_fragment, new ListFragment(), ListFragment.TAG);
+            transaction.replace(R.id.detail_fragment, fragment, DetailFragment.TAG);
             if (oldDetailFragment == null) {
                 screensInTheStack++;
                 transaction.addToBackStack(null);

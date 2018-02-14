@@ -167,7 +167,7 @@ public final class SunshineDateUtils {
      *
      * @return The local date corresponding to the given normalized UTC date
      */
-    private static long getLocalMidnightFromNormalizedUtcDate(long normalizedUtcDate) {
+    public static long getLocalMidnightFromNormalizedUtcDate(long normalizedUtcDate) {
         /* The timeZone object will provide us the current user's time zone offset */
         TimeZone timeZone = TimeZone.getDefault();
         /*

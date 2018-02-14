@@ -126,7 +126,7 @@ public class ListFragment extends Fragment implements
          * created and (if the activity/fragment is currently started) starts the loader. Otherwise
          * the last created loader is re-used.
          */
-        getActivity().getSupportLoaderManager().initLoader(ID_FORECAST_LOADER, null, this);
+        getActivity().getSupportLoaderManager().restartLoader(ID_FORECAST_LOADER, null, this);
 
         SunshineSyncUtils.initialize(getActivity());
         return view;
@@ -185,11 +185,12 @@ public class ListFragment extends Fragment implements
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
-
         mForecastAdapter.swapCursor(data);
-        if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
+        if (mPosition == RecyclerView.NO_POSITION)
+            mPosition = 0;
         mRecyclerView.smoothScrollToPosition(mPosition);
-        if (data.getCount() != 0) showWeatherDataView();
+        if (data.getCount() != 0)
+            showWeatherDataView();
     }
 
     /**
@@ -213,6 +214,9 @@ public class ListFragment extends Fragment implements
      * @param date Normalized UTC time that represents the local date of the weather in GMT time.
      * @see WeatherContract.WeatherEntry#COLUMN_DATE
      */
+
+
+
     @Override
     public void onClick(long date) {
         Uri uriForDateClicked = WeatherContract.WeatherEntry.buildWeatherUriWithDate(date);
